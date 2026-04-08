@@ -2,6 +2,7 @@
 #include <string>
 #include "dataset.hpp"
 #include "vocabulary.hpp"
+#include "trie.hpp"
 
 int main() {
 
@@ -10,6 +11,8 @@ int main() {
 
     vocabularyClass vocabulary;
     vocabulary.load(vocabularyFilePath);
+
+    trieClass trie(vocabulary.tokens);
 
     datasetClass dataset;
     dataset.parse(datasetFilePath);
