@@ -8,11 +8,14 @@
 class datasetClass {
     public:
 
-    std::unordered_map<std::string, int> words;
+    std::unordered_map<std::string, int> tokens;
 
     void parse(std::string &filePath) {
 
+        // Open the dataset file
         std::ifstream file(filePath);
+
+        // Verify that the file is open
         if (!file.is_open()) {
             std::cerr << "The dataset file could not be opened at path " << filePath << "\n";
             exit(1);
@@ -40,15 +43,21 @@ class datasetClass {
                     ignore = false;
                 }
 
+                // These characters mark the end of a word
                 else if (c == ' ' || c == '.' || c == '-') {
+
+                    // If the current word isn't empty, add it to the tokens vector
                     if (word.size() != 0) {
-                        words[word]++;
+                        tokens[word]++;
                         word = "";
                     }
                     continue;
                 }
 
+                // Add the current character to the current word
                 else if (!ignore) {
+
+                    // Check if character is alpha before pushing it
                     if (std::isalpha(c)) {
                         word += static_cast<char>(std::tolower(c));
                     }

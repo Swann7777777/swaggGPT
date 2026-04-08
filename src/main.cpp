@@ -9,11 +9,15 @@ int main() {
     std::string datasetFilePath("../resources/wikitext-103/wiki.test.tokens");
     std::string vocabularyFilePath("../resources/vocabulary.txt");
 
+    // Load the vocabulary
     vocabularyClass vocabulary;
     vocabulary.load(vocabularyFilePath);
 
-    trieClass trie(vocabulary.tokens);
+    // Create the trie data structure
+    trieClass trie;
+    trie.generate(vocabulary.tokens);
 
+    // Load the dataset
     datasetClass dataset;
     dataset.parse(datasetFilePath);
 

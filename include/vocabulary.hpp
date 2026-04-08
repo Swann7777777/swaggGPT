@@ -14,6 +14,8 @@ class vocabularyClass {
 
         // Open the vocabulary file
         std::ifstream file(filePath);
+
+        // Verify that the file is open
         if (!file.is_open()) {
             std::cerr << "The vocabulary file could not be opened at path " << filePath << "\n";
             exit(1);

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 class trieClass {
     public:
@@ -9,44 +10,51 @@ class trieClass {
     class node {
         public:
         
-        node* children[26] = {nullptr};
+        std::unordered_map<char, node*> childrens;
 
-        int count = 0;
+        int index = 0;
     };
 
     node* root;
 
-    void insert(std::string word, int count) {
+    void insert(std::string token, int index) {
 
         // The insertion starts at the root
         node* currentNode = root;
 
-        for (const auto &c : word) {
+        for (const auto &c : token) {
 
             // Check if the current node has the character
-            if (currentNode->children[c - 'a'] == nullptr) {
+            if (currentNode->childrens[c] == nullptr) {
 
                 // Add the character to the node
-                currentNode->children[c - 'a'] = new node();
+                currentNode->childrens[c] = new node();
             }
 
             // Advance in the tree
-            currentNode = currentNode->children[c - 'a'];
+            currentNode = currentNode->childrens[c];
         }
 
-        // Add the word count to the last character
-        currentNode->count = count;
+        // Add the token index to the last character
+        currentNode->index = index;
+    }
+
+    void traverse(std::string token) {
+
+    }
+
+    void generate(std::vector<std::string> tokens) {
+
+        // Generate the tree
+        for (int i = 0; i < static_cast<int>(tokens.size()); i++) {
+            insert(tokens[i], i);
+        }
     }
 
 
-    trieClass(std::vector<std::string> words) {
+    trieClass() {
 
         // Create the root node
         root = new node();
-
-        // Generate the tree
-        for (int i = 0; i < static_cast<int>(words.size()); i++) {
-            insert(words[i], i);
-        }
     }
 };
