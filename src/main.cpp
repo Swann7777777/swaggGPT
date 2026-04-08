@@ -1,6 +1,7 @@
 #include <fstream>
 #include "dataset.hpp"
 #include "vocabulary.hpp"
+#include "trie.hpp"
 
 int main() {
 
@@ -9,6 +10,8 @@ int main() {
 
     vocabularyClass vocabulary;
     vocabulary.load(vocabularyFile);
+
+    trieClass trie(vocabulary.tokens);
 
     datasetClass dataset;
     dataset.parse(datasetFile);
