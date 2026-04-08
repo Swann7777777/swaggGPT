@@ -1,17 +1,18 @@
 #include <fstream>
+#include <string>
 #include "dataset.hpp"
 #include "vocabulary.hpp"
 
 int main() {
 
-    std::ifstream datasetFile("../resources/wikitext-103/wiki.test.tokens");
-    std::ifstream vocabularyFile("../resources/vocabulary.txt");
+    std::string datasetFilePath("../resources/wikitext-103/wiki.test.tokens");
+    std::string vocabularyFilePath("../resources/vocabulary.txt");
 
     vocabularyClass vocabulary;
-    vocabulary.load(vocabularyFile);
+    vocabulary.load(vocabularyFilePath);
 
     datasetClass dataset;
-    dataset.parse(datasetFile);
+    dataset.parse(datasetFilePath);
 
     return 0;
 }

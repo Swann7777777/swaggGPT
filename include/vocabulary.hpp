@@ -10,7 +10,14 @@ class vocabularyClass {
     
     std::vector<std::string> tokens;
 
-    void load(std::ifstream &file) {
+    void load(std::string &filePath) {
+
+        // Open the vocabulary file
+        std::ifstream file(filePath);
+        if (!file.is_open()) {
+            std::cerr << "The vocabulary file could not be opened at path " << filePath << "\n";
+            exit(1);
+        }
         
         std::string line;
 
@@ -18,11 +25,13 @@ class vocabularyClass {
             tokens.push_back(line);
         }
 
+        // Check if the vocabulary contains the alphabet in the first 26 tokens
         std::string alphabet = "abcdefghijklmnopqrstuvwxyz";
 
         for (int i = 0; i < alphabet.size(); i++) {
             if (tokens[i] != std::string(1, alphabet[i])) {
-                std::cout << "The entire alphabet must be present at the beginning of the vocabulary\n";
+                std::cerr << "The entire alphabet must be present at the beginning of the vocabulary\n";
+                exit(1);
             }
         }
     }

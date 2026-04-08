@@ -1,1 +1,2 @@
 https://en.wikipedia.org/wiki/Byte-pair_encoding
+https://en.wikipedia.org/wiki/Trie#/media/File:Trie_example.svg
