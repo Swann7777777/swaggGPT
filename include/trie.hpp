@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 class trieClass {
     public:
@@ -10,69 +11,90 @@ class trieClass {
     class node {
         public:
         
-        std::unordered_map<char, node*> childrens;
+        std::unordered_map<char, std::unique_ptr<node>> children;
 
-        int index = -1;
+        int token = -1;
     };
 
-    node* root;
+    std::unique_ptr<node> root;
 
     void insert(std::string token, int index) {
 
         // The insertion starts at the root
-        node* currentNode = root;
+        node* currentNode = root.get();
 
         // Iterate through the token's characters
         for (const auto &c : token) {
 
             // If the current node doesn't have the current character, add it
-            if (!currentNode->childrens.count(c)) {
+            if (!currentNode->children.count(c)) {
 
-                currentNode->childrens[c] = new node();
+                currentNode->children[c] = std::make_unique<node>();
             }
 
             // Advance in the tree
-            currentNode = currentNode->childrens[c];
+            currentNode = currentNode->children[c].get();
         }
 
         // Add the token index to the last character
-        currentNode->index = index;
+        currentNode->token = index;
     }
 
-    std::string traverse(std::string token) {
+    std::vector<int> tokenize(std::string &word) {
 
-        // The tree traversal starts at the root
-        node* currentNode = root;
+        std::vector<int> tokens;
 
-        // Variable that holds the longest match
-        std::string longestMatch = "";
+        node* currentNode = root.get();
 
-        // Iterate through the token characters
-        for (const auto &c : token) {
+        int lastToken = -1;
+        int lastIndex = -1;
 
-            // If the current node has the current character, advance in the tree
-            if (currentNode->childrens.count(c)) {
 
-                // Set the current node to its children with the character
-                currentNode = currentNode->childrens[c];
+        for (int i = 0; i < static_cast<int>(word.size());) {
 
-                // Add the character to the longest match
-                longestMatch += c;
+            if (currentNode->token >= 0) {
+                lastIndex = i;
+                lastToken = currentNode->token;
             }
 
-            // If the current node doesn't contain the current character, return the token index
+
+
+            if (currentNode->children.count(word[i])) {
+                currentNode = currentNode->children[word[i]].get();
+                i++;
+            }
+
             else {
-                if (currentNode->index < 0) {
-                    std::cerr << "Invalid index in trie for token " << token << "\n";
-                    exit(1);
+
+                if (currentNode->token >= 0) {
+                    tokens.push_back(currentNode->token);
+                    currentNode = root.get();
                 }
 
-                // Return the longest match
-                return longestMatch;
+                else {
+                    tokens.push_back(lastToken);
+                    i = lastIndex;
+                    currentNode = root.get();
+                }
+            }
+
+            if (i == static_cast<int>(word.size())) {
+
+                if (currentNode->token >= 0) {
+                    tokens.push_back(currentNode->token);
+                }
+
+                else {
+                    tokens.push_back(lastToken);
+                    i = lastIndex;
+                    currentNode = root.get();
+                }
             }
         }
 
-        return longestMatch;
+
+
+        return tokens;
     }
 
     void generate(std::vector<std::string> tokens) {
@@ -87,6 +109,6 @@ class trieClass {
     trieClass() {
 
         // Create the root node
-        root = new node();
+        root = std::make_unique<node>();
     }
 };

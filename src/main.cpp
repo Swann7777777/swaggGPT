@@ -6,7 +6,8 @@
 
 int main() {
 
-    std::string datasetFilePath("../resources/wikitext-103/wiki.test.tokens");
+    std::string datasetFilePath("../resources/training/testTokens.txt");
+    // std::string datasetFilePath("../resources/training/wikitext-103/wiki.test.tokens");
     std::string vocabularyFilePath("../resources/vocabulary.txt");
 
     // Load the vocabulary
@@ -19,7 +20,14 @@ int main() {
 
     // Load the dataset
     datasetClass dataset;
-    dataset.parse(datasetFilePath);
+    dataset.parse(datasetFilePath, trie);
+
+    for (const auto &i : dataset.tmpTokenizedWords) {
+        for (const auto &j : i) {
+            std::cout << vocabulary.tokens[j] << " ";
+        }
+        std::cout << "\n";
+    }
 
     return 0;
 }

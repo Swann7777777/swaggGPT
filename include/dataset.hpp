@@ -4,13 +4,14 @@
 #include <string>
 #include <iostream>
 #include <unordered_map>
+#include "trie.hpp"
 
 class datasetClass {
     public:
 
-    std::unordered_map<std::string, int> tokens;
+    std::vector<std::vector<int>> tmpTokenizedWords;
 
-    void parse(std::string &filePath) {
+    void parse(std::string &filePath, trieClass &trie) {
 
         // Open the dataset file
         std::ifstream file(filePath);
@@ -30,6 +31,7 @@ class datasetClass {
             // The current character should be ignored if this variable is true
             bool ignore = false;
 
+            // The current word
             std::string word = "";
 
             // Iterate over line characters
@@ -47,10 +49,18 @@ class datasetClass {
                 else if (c == ' ' || c == '.' || c == '-') {
 
                     // If the current word isn't empty, add it to the tokens vector
-                    if (word.size() != 0) {
-                        tokens[word]++;
-                        word = "";
+                    if (!word.empty()) {
+
+                        // Tokenize the word
+
+                        tmpTokenizedWords.push_back(trie.tokenize(word));
+
+
+                        // while (!word.empty()) {
+                        //     tokens[trie.tokenize(word)]++;
+                        // }
                     }
+
                     continue;
                 }
 
@@ -62,6 +72,17 @@ class datasetClass {
                         word += static_cast<char>(std::tolower(c));
                     }
                 }
+            }
+            // If the current word isn't empty, add it to the tokens vector
+            if (!word.empty()) {
+
+                // Tokenize the word
+
+                tmpTokenizedWords.push_back(trie.tokenize(word));
+
+                // while (!word.empty()) {
+                //     tokens[trie.tokenize(word)]++;
+                // }
             }
         }
     }
