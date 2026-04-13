@@ -46,25 +46,21 @@ class datasetClass {
                 }
 
                 // These characters mark the end of a word
-                else if (c == ' ' || c == '.' || c == '-') {
+                else if (c == ' ' || c == '.' || c == '-' || c == '\'') {
 
-                    // If the current word isn't empty, add it to the tokens vector
+                    // The character accumulator isn't empty
                     if (!word.empty()) {
 
                         // Tokenize the word
-
                         tmpTokenizedWords.push_back(trie.tokenize(word));
 
-
-                        // while (!word.empty()) {
-                        //     tokens[trie.tokenize(word)]++;
-                        // }
+                        word = "";
                     }
 
                     continue;
                 }
 
-                // Add the current character to the current word
+                // Add the current character to the character accumulator
                 else if (!ignore) {
 
                     // Check if character is alpha before pushing it
@@ -73,16 +69,12 @@ class datasetClass {
                     }
                 }
             }
-            // If the current word isn't empty, add it to the tokens vector
+
+            // The character accumulator isn't empty
             if (!word.empty()) {
 
                 // Tokenize the word
-
                 tmpTokenizedWords.push_back(trie.tokenize(word));
-
-                // while (!word.empty()) {
-                //     tokens[trie.tokenize(word)]++;
-                // }
             }
         }
     }

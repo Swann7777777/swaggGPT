@@ -24,6 +24,3 @@ w
 x
 y
 z
-under
-stand
-ing
