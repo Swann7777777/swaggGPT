@@ -5,13 +5,12 @@
 #include <iostream>
 #include <unordered_map>
 #include "trie.hpp"
+#include "pairs.hpp"
 
 class datasetClass {
     public:
 
-    std::vector<std::vector<int>> tmpTokenizedWords;
-
-    void parse(std::string &filePath, trieClass &trie) {
+    void parse(std::string &filePath, trieClass &trie, pairsClass &pairs) {
 
         // Open the dataset file
         std::ifstream file(filePath);
@@ -52,7 +51,12 @@ class datasetClass {
                     if (!word.empty()) {
 
                         // Tokenize the word
-                        tmpTokenizedWords.push_back(trie.tokenize(word));
+                        std::vector<int> tokens = trie.tokenize(word);
+
+                        // Create the pairs
+                        if (tokens.size() > 1) {
+                            pairs.createPair(tokens);
+                        }
 
                         word = "";
                     }
@@ -74,7 +78,12 @@ class datasetClass {
             if (!word.empty()) {
 
                 // Tokenize the word
-                tmpTokenizedWords.push_back(trie.tokenize(word));
+                std::vector<int> tokens = trie.tokenize(word);
+
+                // Create the pairs
+                if (tokens.size() > 1) {
+                    pairs.createPair(tokens);
+                }
             }
         }
     }
