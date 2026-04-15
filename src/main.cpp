@@ -58,7 +58,10 @@ int main() {
         // Find and edit the tokenized words that were affected by the newest vocabulary token
         for (const auto &[tokens, frequency] : dataset.tokenizedWords) {
 
+            // The tokenized word is only one token long
             if (tokens.size() <= 1) {
+
+                // Throw it away
                 oldTokenizedWords.push_back(tokens);
                 continue;
             }
@@ -80,8 +83,10 @@ int main() {
                 }
             }
             
+            // Check if the word was affected by the newest token
             if (newTokens != tokens) {
                 
+                // Delete all temporary tokens in the new tokenized word
                 for (int i = 0; i < newTokens.size(); i++) {
                     if (newTokens[i] == -1) {
                         newTokens.erase(newTokens.begin() + i);
