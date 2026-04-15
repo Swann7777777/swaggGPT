@@ -7,7 +7,7 @@
 
 int main() {
 
-    int vocabularySizeGoal = 1000;
+    int vocabularySizeGoal = 30000;
 
     // std::string datasetFilePath("../resources/training/testTokens.txt");
     // std::string datasetFilePath("../resources/training/wikitext-103/wiki.test.tokens");
@@ -60,7 +60,7 @@ int main() {
 
             if (tokens.size() <= 1) {
                 oldTokenizedWords.push_back(tokens);
-                break;
+                continue;
             }
 
             // Declare a copy of the current word's tokens that can be modified
