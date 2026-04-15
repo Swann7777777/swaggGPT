@@ -40,7 +40,7 @@ class trieClass {
         currentNode->token = index;
     }
 
-    std::vector<int> tokenize(std::string &word) {
+    std::vector<int> tokenize(const std::string &word) {
 
         std::vector<int> tokens;
 

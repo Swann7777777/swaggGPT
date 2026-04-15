@@ -4,6 +4,8 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <algorithm>
+#include "pairs.hpp"
 
 class vocabularyClass {
     public:
@@ -36,5 +38,14 @@ class vocabularyClass {
                 exit(1);
             }
         }
+    }
+
+    void output(pairsClass &pairs, std::string &filePath) {
+
+        std::ofstream file(filePath, std::ios::app);
+
+        file << "\n" << tokens[pairs.mostFrequentPair.first] + tokens[pairs.mostFrequentPair.second];
+
+        tokens.push_back(tokens[pairs.mostFrequentPair.first] + tokens[pairs.mostFrequentPair.second]);
     }
 };

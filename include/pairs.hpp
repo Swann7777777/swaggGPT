@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <algorithm>
 
 class pairsClass {
     public:
@@ -16,13 +17,27 @@ class pairsClass {
         }
     };
 
-    std::unordered_map<std::pair<int, int>, int, pairHash> frequencies;
+    std::pair<int, int> mostFrequentPair;
 
-    void createPair(std::vector<int> tokens) {
+    std::unordered_map<std::pair<int, int>, int, pairHash> pairs;
+
+    void createPair(const std::vector<int> &tokens, const int &frequency) {
 
         for (int i = 0; i < tokens.size() - 1; i++) {
 
-            frequencies[{tokens[i], tokens[i + 1]}]++;
+            pairs[{tokens[i], tokens[i + 1]}] += frequency;
         }
+    }
+
+    void count() {
+        auto it = std::max_element(std::begin(pairs),
+        std::end(pairs),
+        [] (const std::pair<std::pair<int, int>, int> p1, const std::pair<std::pair<int, int>, int> p2) {return p1.second < p2.second;});
+
+        if (it == pairs.end()) {
+            std::cerr << "An error occured while finding the most frequent pair\n";
+        }
+
+        mostFrequentPair = it->first;
     }
 };

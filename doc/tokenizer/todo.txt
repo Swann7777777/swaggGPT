@@ -1,0 +1,18 @@
+New tokenizer method :
+
+- Parse the entire corpus once
+=> Word - Frequency map
+
+- Tokenize the words
+=> Tokenized Words - Frequency map
+
+LOOP {
+    - Create and count the pairs
+    => Pairs - Frequency map
+
+    - Add most frequent pair to vocabulary
+    => New Vocabulary
+
+    - Retokenize words that had this pair
+    => Tokenized Words - Frequency map
+}

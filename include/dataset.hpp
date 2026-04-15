@@ -4,13 +4,31 @@
 #include <string>
 #include <iostream>
 #include <unordered_map>
+#include <vector>
+#include <functional>
 #include "trie.hpp"
 #include "pairs.hpp"
 
 class datasetClass {
     public:
 
-    void parse(std::string &filePath, trieClass &trie, pairsClass &pairs) {
+    struct vectorHash {
+        size_t operator()(const std::vector<int> &vec) const {
+
+            size_t hash = 0;
+
+            for (const auto &i : vec) {
+                hash ^= std::hash<int>()(i);
+            }
+
+            return hash;
+        }
+    };
+
+    std::unordered_map<std::string, int> words;
+    std::unordered_map<std::vector<int>, int, vectorHash> tokenizedWords;
+
+    void parse(std::string &filePath) {
 
         // Open the dataset file
         std::ifstream file(filePath);
@@ -50,13 +68,15 @@ class datasetClass {
                     // The character accumulator isn't empty
                     if (!word.empty()) {
 
-                        // Tokenize the word
-                        std::vector<int> tokens = trie.tokenize(word);
+                        words[word]++;
 
-                        // Create the pairs
-                        if (tokens.size() > 1) {
-                            pairs.createPair(tokens);
-                        }
+                        // // Tokenize the word
+                        // std::vector<int> tokens = trie.tokenize(word);
+
+                        // // Create the pairs
+                        // if (tokens.size() > 1) {
+                        //     pairs.createPair(tokens);
+                        // }
 
                         word = "";
                     }
@@ -77,13 +97,15 @@ class datasetClass {
             // The character accumulator isn't empty
             if (!word.empty()) {
 
-                // Tokenize the word
-                std::vector<int> tokens = trie.tokenize(word);
+                words[word]++;
 
-                // Create the pairs
-                if (tokens.size() > 1) {
-                    pairs.createPair(tokens);
-                }
+                // // Tokenize the word
+                // std::vector<int> tokens = trie.tokenize(word);
+
+                // // Create the pairs
+                // if (tokens.size() > 1) {
+                //     pairs.createPair(tokens);
+                // }
             }
         }
     }
