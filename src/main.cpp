@@ -10,6 +10,7 @@
 int main() {
 
     int vocabularySizeGoal = 1026;
+    int chunkSize = 10000;
 
     // std::string datasetFilePath("../resources/training/testTokens.txt");
     // std::string datasetFilePath("../resources/training/wikitext-103/wiki.test.tokens");
@@ -41,13 +42,58 @@ int main() {
         dataset.tokenizedWords[trie.tokenize(word)] += frequency;
     }
 
+    std::mutex updateMutex;
+
     // Generate new tokens until the goal is reached
     while (static_cast<int>(vocabulary.tokens.size()) < vocabularySizeGoal) {
 
-        // Create the pairs from the tokenized words
-        for (const auto &[tokens, frequency] : dataset.tokenizedWords) {
-            pairs.createPair(tokens, frequency);
+        auto pairStart = std::chrono::high_resolution_clock::now();
+
+        auto it = dataset.tokenizedWords.begin();
+
+        for (int i = 0; i < threadPool.threads.size(); i++) {
+
+            auto start = it;
+            auto end = start;
+
+            int count = 0;
+
+            while (count < chunkSize && end != dataset.tokenizedWords.end()) {
+                ++end;
+                ++count;
+            }
+
+            if (i == threadPool.threads.size() - 1) {
+                end = dataset.tokenizedWords.end();
+            }
+
+
+            threadPool.enqueue([&pairs, start, end, &updateMutex] {
+
+                std::unordered_map<std::pair<int, int>, int, pairsClass::pairHash> tmpPairs;
+
+                for (auto it = start; it != end; it++) {
+                    pairs.createPair(it->first, it->second, tmpPairs);
+                }
+
+                {
+                    std::lock_guard<std::mutex> lock(updateMutex);
+                    for (const auto &[pair, frequency] : tmpPairs) {
+                        pairs.pairs[pair] += frequency;
+                    }
+                }
+            });
+
+            it = end;
         }
+
+        threadPool.wait();
+
+        auto pairEnd = std::chrono::high_resolution_clock::now();
+        auto pairDuration = std::chrono::duration_cast<std::chrono::milliseconds>(pairEnd - pairStart);
+
+        std::cout << pairDuration.count() << " ms\n";
+
 
         // Find the most frequent pair
         pairs.count();
@@ -59,67 +105,93 @@ int main() {
         pairs.pairs.clear();
 
         // Declare temporary vector for unordered map update
+        std::unordered_map<std::vector<int>, bool, datasetClass::vectorHash> oldTokenizedWords;
         std::vector<std::pair<std::vector<int>, int>> newTokenizedWords;
-        std::vector<std::vector<int>> oldTokenizedWords;
-        std::mutex updateMutex;
 
-        // Find and edit the tokenized words that were affected by the newest vocabulary token
-        for (const auto &[tokens, frequency] : dataset.tokenizedWords) {
+        it = dataset.tokenizedWords.begin();
 
-            threadPool.enqueue([tokens, frequency, &oldTokenizedWords, &pairs, &vocabulary, &newTokenizedWords, &updateMutex] {
+        for (int i = 0; i < threadPool.threads.size(); i++) {
 
-                // The tokenized word is only one token long
-                if (tokens.size() <= 1) {
-    
-                    {
-                        std::lock_guard<std::mutex> lock(updateMutex);
+            auto start = it;
+            auto end = start;
+
+            int count = 0;
+
+            while (count < chunkSize && end != dataset.tokenizedWords.end()) {
+                ++end;
+                ++count;
+            }
+
+            if (i == threadPool.threads.size() - 1) {
+                end = dataset.tokenizedWords.end();
+            }
+
+            threadPool.enqueue([start, end, &updateMutex, &pairs, &vocabulary, &newTokenizedWords, &oldTokenizedWords] {
+
+                std::vector<std::pair<std::vector<int>, int>> tmpNewTokenizedWords;
+                std::vector<std::vector<int>> tmpOldTokenizedWords;
+
+                for (auto it = start; it != end; it++) {
+
+                    std::vector<int> tokens = it->first;
+                    int frequency = it->second;
+
+                    // The tokenized word is only one token long
+                    if (tokens.size() <= 1) {
+            
                         // Throw it away
-                        oldTokenizedWords.push_back(tokens);
+                        tmpOldTokenizedWords.push_back(tokens);
+            
+                        continue;
                     }
-
-                    return;
-                }
-    
-                // Declare a copy of the current word's tokens that can be modified
-                std::vector<int> newTokens = tokens;
-    
-                // Iterate through the word's tokens
-                for (int i = 0; i < tokens.size() - 1; i++) {
-    
-                    // Check the word contains the sequence
-                    if (tokens[i] == pairs.mostFrequentPair.first && tokens[i + 1] == pairs.mostFrequentPair.second) {
-    
-                        // Replace the current token with the new one
-                        newTokens[i] = vocabulary.tokens.size() - 1;
-    
-                        // Replace the second token of the pair with -1
-                        newTokens[i + 1] = -1;
+            
+                    // Declare a copy of the current word's tokens that can be modified
+                    std::vector<int> newTokens = tokens;
+            
+                    // Iterate through the word's tokens
+                    for (int i = 0; i < tokens.size() - 1; i++) {
+            
+                        // Check the word contains the sequence
+                        if (tokens[i] == pairs.mostFrequentPair.first && tokens[i + 1] == pairs.mostFrequentPair.second) {
+            
+                            // Replace the current token with the new one
+                            newTokens[i] = vocabulary.tokens.size() - 1;
+            
+                            // Replace the second token of the pair with -1
+                            newTokens[i + 1] = -1;
+                        }
                     }
-                }
-                
-                // Check if the word was affected by the newest token
-                if (newTokens != tokens) {
                     
-                    // Delete all temporary tokens in the new tokenized word
-                    newTokens.erase(std::remove(newTokens.begin(), newTokens.end(), -1), newTokens.end());
-    
-                    {
-                        std::lock_guard<std::mutex> lock(updateMutex);
+                    // Check if the word was affected by the newest token
+                    if (newTokens != tokens) {
+                        
+                        // Delete all temporary tokens in the new tokenized word
+                        newTokens.erase(std::remove(newTokens.begin(), newTokens.end(), -1), newTokens.end());
+            
                         // Add the new and old words to the update vectors
-                        newTokenizedWords.push_back({newTokens, frequency});
-                        oldTokenizedWords.push_back(tokens);
+                        tmpNewTokenizedWords.push_back({newTokens, frequency});
+                        tmpOldTokenizedWords.push_back(tokens);
                     }
                 }
 
-                return;
+                {
+                    std::lock_guard<std::mutex> lock(updateMutex);
+                    for (const auto &i : tmpOldTokenizedWords) {
+                        oldTokenizedWords[i] = true;
+                    }
+                    newTokenizedWords.insert(newTokenizedWords.end(), tmpNewTokenizedWords.begin(), tmpNewTokenizedWords.end());
+                }
             });
+
+            it = end;
         }
+
 
         threadPool.wait();
 
         // Remove old tokenized words
         for (const auto &i : oldTokenizedWords) {
-            dataset.tokenizedWords.erase(i);
+            dataset.tokenizedWords.erase(i.first);
         }
 
         // Add new tokenized words

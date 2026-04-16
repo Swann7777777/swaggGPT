@@ -9,15 +9,16 @@
 class threadPoolClass {
     private:
 
-    std::vector<std::thread> threads;
     std::queue<std::function<void()>> tasks;
     std::mutex queueMutex;
     std::condition_variable cv;
     bool stop = false;
     int activeTasks = 0;
     std::condition_variable waitCv;
-
+    
     public:
+    
+    std::vector<std::thread> threads;
 
     threadPoolClass() {
         int threadCount = std::thread::hardware_concurrency();

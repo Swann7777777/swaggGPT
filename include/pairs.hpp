@@ -21,11 +21,11 @@ class pairsClass {
 
     std::unordered_map<std::pair<int, int>, int, pairHash> pairs;
 
-    void createPair(const std::vector<int> &tokens, const int &frequency) {
+    void createPair(const std::vector<int> &tokens, const int &frequency, std::unordered_map<std::pair<int, int>, int, pairHash> &tmpPairs) {
 
         for (int i = 0; i < tokens.size() - 1; i++) {
 
-            pairs[{tokens[i], tokens[i + 1]}] += frequency;
+            tmpPairs[{tokens[i], tokens[i + 1]}] += frequency;
         }
     }
 
@@ -36,6 +36,7 @@ class pairsClass {
 
         if (it == pairs.end()) {
             std::cerr << "An error occured while finding the most frequent pair\n";
+            exit(1);
         }
 
         mostFrequentPair = it->first;
