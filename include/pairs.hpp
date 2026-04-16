@@ -32,7 +32,7 @@ class pairsClass {
     void count() {
         auto it = std::max_element(std::begin(pairs),
         std::end(pairs),
-        [] (const std::pair<std::pair<int, int>, int> p1, const std::pair<std::pair<int, int>, int> p2) {return p1.second < p2.second;});
+        [] (const std::pair<std::pair<int, int>, int> p1, const std::pair<std::pair<int, int>, int> p2) { return p1.second < p2.second; });
 
         if (it == pairs.end()) {
             std::cerr << "An error occured while finding the most frequent pair\n";
