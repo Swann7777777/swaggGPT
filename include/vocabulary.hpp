@@ -38,6 +38,8 @@ class vocabularyClass {
                 exit(1);
             }
         }
+
+        file.close();
     }
 
     void output(pairsClass &pairs, std::string &filePath) {
@@ -52,5 +54,7 @@ class vocabularyClass {
         file << "\n" << tokens[pairs.mostFrequentPair.first] + tokens[pairs.mostFrequentPair.second];
 
         tokens.push_back(tokens[pairs.mostFrequentPair.first] + tokens[pairs.mostFrequentPair.second]);
+
+        file.close();
     }
 };
