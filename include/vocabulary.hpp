@@ -44,6 +44,11 @@ class vocabularyClass {
 
         std::ofstream file(filePath, std::ios::app);
 
+        if (!file.is_open()) {
+            std::cerr << "The vocabulary file could not be opened at path " << filePath << "\n";
+            exit(1);
+        }
+
         file << "\n" << tokens[pairs.mostFrequentPair.first] + tokens[pairs.mostFrequentPair.second];
 
         tokens.push_back(tokens[pairs.mostFrequentPair.first] + tokens[pairs.mostFrequentPair.second]);
