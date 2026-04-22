@@ -1,2 +1,21 @@
 - Handle embeddings saving
     - Binary file
+
+
+
+IDK :
+
+While file open:
+
+    While !stop:
+
+        - Load a word
+        - Tokenize the word
+        - If number of tokens > max, stop
+
+    For every tokens:
+
+        For every n tokens before and after the current word:
+        
+            - Forward pass -> Loss
+            - Backward pass -> Gradient

@@ -1,0 +1,9 @@
+- Forward pass
+    - Weighted sum
+    - Activation function
+    - Softmax -> probabilities
+
+- Backward pass
+    - Error calculation
+    - Gradients
+    - Chain rule
