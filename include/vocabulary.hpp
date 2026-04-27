@@ -11,7 +11,7 @@ class vocabularyClass {
     
     std::vector<std::string> tokens;
 
-    void load(std::string &filePath) {
+    void load(const std::string &filePath) {
 
         // Open the vocabulary file
         std::ifstream file(filePath);

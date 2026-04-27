@@ -17,7 +17,7 @@ class datasetClass {
 
     std::ifstream file;
 
-    datasetClass(std::string &filePath, int &maxTokens) {
+    datasetClass(const std::string &filePath, const int &maxTokens) {
 
         this->maxTokens = maxTokens;
 
