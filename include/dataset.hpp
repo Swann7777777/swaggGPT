@@ -11,15 +11,15 @@
 class datasetClass {
     public:
 
-    int maxTokens = 0;
+    int batchSize = 0;
 
     std::vector<int> tokens;
 
     std::ifstream file;
 
-    datasetClass(const std::string &filePath, const int &maxTokens) {
+    datasetClass(const std::string &filePath, const int &batchSize) {
 
-        this->maxTokens = maxTokens;
+        this->batchSize = batchSize;
 
         // Open the dataset file
         file.open(filePath);
@@ -31,74 +31,79 @@ class datasetClass {
         }
     }
 
-    void parse(trieClass &trie) {
+    bool parse(trieClass &trie) {
 
         std::string line = "";
 
         
         // Iterate over dataset lines
-        while (getline(file, line)) {
-            
-            // The current character should be ignored if this variable is true
-            bool ignore = false;
+        while (true) {
 
-            // The current word
-            std::string accumulator = "";
-
-            // Iterate over line characters
-            for (const auto &c : line) {
+            if (getline(file, line)) {
                 
-                if (c == '<') {
-                    ignore = true;
-                }
+                // The current character should be ignored if this variable is true
+                bool ignore = false;
 
-                else if (c == '>') {
-                    ignore = false;
-                }
+                // The current word
+                std::string accumulator = "";
 
-                // These characters mark the end of a word
-                else if (c == ' ' || c == '.' || c == '-' || c == '\'') {
+                // Iterate over line characters
+                for (const auto &c : line) {
+                    
+                    if (c == '<') {
+                        ignore = true;
+                    }
 
-                    // The character accumulator isn't empty
-                    if (!accumulator.empty()) {
+                    else if (c == '>') {
+                        ignore = false;
+                    }
 
-                        // Tokenize the current word
-                        std::vector<int> tokenizedWord = trie.tokenize(accumulator);
+                    // These characters mark the end of a word
+                    else if (c == ' ' || c == '.' || c == '-' || c == '\'') {
 
-                        // Add the tokenized word to the tokens list
-                        tokens.insert(tokens.end(), tokenizedWord.begin(), tokenizedWord.end());
+                        // The character accumulator isn't empty
+                        if (!accumulator.empty()) {
 
-                        // Stop parsing once the expected size is reached
-                        if (tokens.size() >= maxTokens) {
-                            return;
+                            // Tokenize the current word
+                            std::vector<int> tokenizedWord = trie.tokenize(accumulator);
+
+                            // Add the tokenized word to the tokens list
+                            tokens.insert(tokens.end(), tokenizedWord.begin(), tokenizedWord.end());
+
+                            // Stop parsing once the expected size is reached
+                            if (tokens.size() >= batchSize) {
+                                return true;
+                            }
+
+                            // Clear the character accumulator
+                            accumulator = "";
                         }
 
-                        // Clear the character accumulator
-                        accumulator = "";
+                        continue;
                     }
 
-                    continue;
+                    // Add the current character to the character accumulator
+                    else if (!ignore) {
+
+                        // Check if character is alpha before pushing it to the accumulator
+                        if (std::isalpha(c)) {
+                            accumulator += static_cast<char>(std::tolower(c));
+                        }
+                    }
                 }
 
-                // Add the current character to the character accumulator
-                else if (!ignore) {
+                // The character accumulator isn't empty
+                if (!accumulator.empty()) {
 
-                    // Check if character is alpha before pushing it
-                    if (std::isalpha(c)) {
-                        accumulator += static_cast<char>(std::tolower(c));
-                    }
+                    std::vector<int> tokenizedWord = trie.tokenize(accumulator);
+                    tokens.insert(tokens.end(), tokenizedWord.begin(), tokenizedWord.end());
                 }
             }
 
-            // The character accumulator isn't empty
-            if (!accumulator.empty()) {
-
-                std::vector<int> tokenizedWord = trie.tokenize(accumulator);
-
-                tokens.insert(tokens.end(), tokenizedWord.begin(), tokenizedWord.end());
+            // End of file, returns false
+            else {
+                return false;
             }
         }
-
-        return;
     }
 };

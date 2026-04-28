@@ -9,18 +9,31 @@
 class fileClass {
     public:
 
-    void load(const std::string &filePath, const int &vocabularySize, std::vector<std::vector<float>> &embeddings, const int &dimensions) {
+    // Load the binary embedding file into memory
+    void load(const std::string &filePath, const int &vocabularySize, embeddingsClass &embeddings, const int &dimensions) {
 
         std::ifstream file(filePath, std::ios::in);
 
+        // Check if file was successfully opened
         if (!file.is_open()) {
             std::cerr << "Could not open embedding file at path " << filePath << " during loading\n";
             exit(1);
         }
 
-        embeddings.resize(vocabularySize);
+        // Resize vectors to prevent overflow
+        embeddings.inputLayer.resize(vocabularySize);
+        embeddings.outputLayer.resize(vocabularySize);
 
-        for (auto &i : embeddings) {
+        // Read the input layer embeddings
+        for (auto &i : embeddings.inputLayer) {
+
+            i.resize(dimensions);
+            file.read(reinterpret_cast<char*>(i.data()), dimensions * sizeof(float));
+        }
+
+        // Read the output layer embeddings
+        for (auto &i : embeddings.outputLayer) {
+
             i.resize(dimensions);
             file.read(reinterpret_cast<char*>(i.data()), dimensions * sizeof(float));
         }
@@ -28,16 +41,24 @@ class fileClass {
         file.close();
     }
 
-    void save (std::vector<std::vector<float>> &embeddings, const std::string &filePath) {
+    // Saves the embeddings to a binary file
+    void save (embeddingsClass &embeddings, const std::string &filePath) {
 
         std::ofstream file(filePath, std::ios::binary);
 
+        // Check if file was successfully opened
         if (!file.is_open()) {
             std::cerr << "Could not open embedding file at path " << filePath << " during saving\n";
             exit(1);
         }
 
-        for (auto &i : embeddings) {
+        // Write the input layer embeddings
+        for (auto &i : embeddings.inputLayer) {
+            file.write(reinterpret_cast<char*>(i.data()), sizeof(float) * i.size());
+        }
+
+        // Write the output layer embeddings
+        for (auto &i : embeddings.outputLayer) {
             file.write(reinterpret_cast<char*>(i.data()), sizeof(float) * i.size());
         }
 
