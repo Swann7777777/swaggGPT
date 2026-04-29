@@ -5,6 +5,7 @@
 #include "dataset.hpp"
 #include "embeddings.hpp"
 #include "file.hpp"
+#include "softmax.hpp"
 
 
 int main() {
@@ -35,6 +36,12 @@ int main() {
     file.load(embeddingsFilePath, vocabulary.tokens.size(), embeddings, embeddingDimensions);
     
     datasetClass dataset(datasetFilePath, batchSize);
+    dataset.buildFrequencyMap(trie);
+
+    softmaxClass softmax;
+    softmax.buildTree(dataset.tokenFrequencies);
+
+    return 0;
 
 
     std::vector<float> zeroVector(embeddingDimensions, 0.0f);
