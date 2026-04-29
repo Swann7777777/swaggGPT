@@ -18,6 +18,7 @@ class trieClass {
 
     std::unique_ptr<node> root;
 
+    // Add a new token to the tree with its index
     void insert(std::string token, int index) {
 
         // The insertion starts at the root
@@ -40,6 +41,7 @@ class trieClass {
         currentNode->token = index;
     }
 
+    // Returns the tokenized vector of the given word string
     std::vector<int> tokenize(const std::string &word) {
 
         std::vector<int> tokens;
@@ -115,6 +117,7 @@ class trieClass {
         return tokens;
     }
 
+    // Generated the tree data structure by inserting every token it's given
     void generate(std::vector<std::string> tokens) {
 
         // Generate the tree
@@ -123,7 +126,7 @@ class trieClass {
         }
     }
 
-
+    // Creates the root node
     trieClass() {
 
         // Create the root node

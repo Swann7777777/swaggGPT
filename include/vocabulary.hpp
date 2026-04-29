@@ -11,6 +11,7 @@ class vocabularyClass {
     
     std::vector<std::string> tokens;
 
+    // Load the vocabulary into memory
     void load(const std::string &filePath) {
 
         // Open the vocabulary file
