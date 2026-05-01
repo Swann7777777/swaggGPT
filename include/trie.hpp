@@ -8,21 +8,21 @@
 class trieClass {
     public:
 
-    class node {
+    class nodeStruct {
         public:
         
-        std::unordered_map<char, std::unique_ptr<node>> children;
+        std::unordered_map<char, std::unique_ptr<nodeStruct>> children;
 
         int token = -1;
     };
 
-    std::unique_ptr<node> root;
+    std::unique_ptr<nodeStruct> root;
 
     // Add a new token to the tree with its index
     void insert(std::string token, int index) {
 
         // The insertion starts at the root
-        node* currentNode = root.get();
+        nodeStruct* currentNode = root.get();
 
         // Iterate through the token's characters
         for (const auto &c : token) {
@@ -30,7 +30,7 @@ class trieClass {
             // If the current node doesn't have the current character, add it
             if (!currentNode->children.count(c)) {
 
-                currentNode->children[c] = std::make_unique<node>();
+                currentNode->children[c] = std::make_unique<nodeStruct>();
             }
 
             // Advance in the tree
@@ -46,7 +46,7 @@ class trieClass {
 
         std::vector<int> tokens;
 
-        node* currentNode = root.get();
+        nodeStruct* currentNode = root.get();
 
         // Initialize variables to sentinel values
         int lastToken = -1;
@@ -130,6 +130,6 @@ class trieClass {
     trieClass() {
 
         // Create the root node
-        root = std::make_unique<node>();
+        root = std::make_unique<nodeStruct>();
     }
 };

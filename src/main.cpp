@@ -41,6 +41,8 @@ int main() {
     softmaxClass softmax;
     softmax.buildTree(dataset.tokenFrequencies);
 
+    softmax.buildPaths();
+
     return 0;
 
 
