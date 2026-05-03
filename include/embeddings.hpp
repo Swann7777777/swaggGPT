@@ -21,11 +21,11 @@ class embeddingsClass {
     }
 
     // Randomly initialize the weights with Glorot initialization 
-    void generateRandom(const int &vocabularySize) {
+    void generateRandom(const int &vocabularySize, const int &nodeCount) {
 
         // Make sure the vectors are of the right size
         inputLayer.resize(vocabularySize);
-        outputLayer.resize(vocabularySize);
+        outputLayer.resize(nodeCount);
 
         // Compute the interval according to the Glorot initialization
         float interval = std::sqrt(6) / std::sqrt(2 * dimensions);
@@ -74,10 +74,11 @@ class embeddingsClass {
     }
 
     // Returns the loss
-    float loss(const float &softmax) {
+    inline float loss(const float &softmax) {
 
         float loss = - std::log(softmax);
 
+        // Check for floating point rounding error caused by std::log(0)
         return std::isnan(loss) || std::isinf(loss) ? 0 : loss;
     }
 

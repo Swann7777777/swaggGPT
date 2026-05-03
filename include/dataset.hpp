@@ -32,7 +32,15 @@ class datasetClass {
     std::unordered_map<int, int> tokenFrequencies;
 
     // Builds the tokenFrequencies map
-    void buildFrequencyMap(trieClass &trie) {
+    void buildFrequencyMap(trieClass &trie, const int &vocabularySize) {
+
+        for (int i = 0; i < vocabularySize; i++) {
+
+            tokenFrequencies[i] = 0;
+        }
+
+
+
 
         std::string line = "";
 

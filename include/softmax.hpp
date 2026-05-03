@@ -18,11 +18,9 @@ class softmaxClass {
         std::unique_ptr<nodeStruct> rightChild = nullptr;
         std::unique_ptr<nodeStruct> leftChild = nullptr;
 
-        float rightWeight = 0;
-        float leftWeight = 0;
-
         int token = -1;
         int frequency = 0;
+        int embeddingIndex = -1;
     };
 
     struct pathStruct {
@@ -32,21 +30,26 @@ class softmaxClass {
     };
 
 
-    static bool pairFrequencyComp(const std::pair<int, int> &a, const std::pair<int, int> &b) {
+    static inline bool pairFrequencyComp(const std::pair<int, int> &a, const std::pair<int, int> &b) {
 
         return a.second > b.second;
     }
 
-    static bool nodeFrequencyComp(const std::unique_ptr<nodeStruct> &a, const std::unique_ptr<nodeStruct> &b) {
+    static inline bool nodeFrequencyComp(const std::unique_ptr<nodeStruct> &a, const std::unique_ptr<nodeStruct> &b) {
 
         return a->frequency > b->frequency;
     }
 
-    
-    std::unique_ptr<nodeStruct> root;
+
+    static inline float sigmoid(const float &x) {
+
+        return 1/(1 + std::exp(-x));
+    }
 
     
-    void buildTree(std::unordered_map<int, int> tokenFrequencies) {
+    std::unique_ptr<nodeStruct> root;
+        
+    void buildTree(const std::unordered_map<int, int> &tokenFrequencies, const int &nodeCount) {
         
         // Vector that will hold the sorted token frequencies from the map as pairs of token/frequency
         std::vector<std::pair<int, int>> sortedTokenFrequencies;
@@ -71,6 +74,8 @@ class softmaxClass {
             leaves.push_back(std::move(newLeaf));
         }
 
+        int embeddingIndex = nodeCount - 1;
+
         // Build the tree from the bottom up with the huffman coding algorithm
         while (leaves.size() > 1) {
 
@@ -85,6 +90,9 @@ class softmaxClass {
             // The frequency of the new node is set to the sum of the frequencies of the child nodes
             newNode->frequency = newNode->rightChild->frequency + newNode->leftChild->frequency;
 
+            newNode->embeddingIndex = embeddingIndex;
+            embeddingIndex--;
+
             // Insert the newly created node in the correct position in the leaves vector to maintain ordering
             leaves.insert(std::upper_bound(leaves.begin(), leaves.end(), newNode, nodeFrequencyComp), std::move(newNode));
         }
@@ -94,6 +102,7 @@ class softmaxClass {
     }
 
     std::unordered_map<int, pathStruct> paths;
+
 
     // Searches recursively the node it's given, stops if it encounters a leaf
     void search(std::unique_ptr<nodeStruct> &currentNode, pathStruct currentPath) {
@@ -122,11 +131,10 @@ class softmaxClass {
         search(currentNode->leftChild, currentPath);
     }
 
-
     void buildPaths() {
 
         pathStruct path;
-
+        path.path.push_back(root.get());
         search(root, path);
     }
 

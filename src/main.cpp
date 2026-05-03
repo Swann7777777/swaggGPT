@@ -15,33 +15,33 @@ int main() {
     const std::string embeddingsFilePath = "../resources/embeddings.bin";
 
     // The maximum amount of tokens the code will load at once
-    int batchSize = 1000;
-    int embeddingDimensions = 100;
-    float learningRate = 0.001f;
-    int contextWindowSize = 5;
+    const int batchSize = 1000;
+    const int embeddingDimensions = 100;
+    const float learningRate = 0.001f;
+    const int contextWindowSize = 5;
 
     vocabularyClass vocabulary;
     vocabulary.load(vocabularyFilePath);
 
+    const int nodeCount = vocabulary.tokens.size() - 1;
+
     trieClass trie;
     trie.generate(vocabulary.tokens);
     
-    embeddingsClass embeddings(embeddingDimensions);
-
-    fileClass file;
-
-    embeddings.generateRandom(vocabulary.tokens.size());
-    file.save(embeddings, embeddingsFilePath);
-    
-    file.load(embeddingsFilePath, vocabulary.tokens.size(), embeddings, embeddingDimensions);
-    
     datasetClass dataset(datasetFilePath, batchSize);
-    dataset.buildFrequencyMap(trie);
-
+    dataset.buildFrequencyMap(trie, vocabulary.tokens.size());
+    
+    embeddingsClass embeddings(embeddingDimensions);
+    embeddings.generateRandom(vocabulary.tokens.size(), nodeCount);
+    
     softmaxClass softmax;
-    softmax.buildTree(dataset.tokenFrequencies);
-
+    softmax.buildTree(dataset.tokenFrequencies, nodeCount);
     softmax.buildPaths();
+
+    
+    fileClass file;
+    file.save(embeddings, embeddingsFilePath);
+    file.load(embeddingsFilePath, vocabulary.tokens.size(), embeddings, embeddingDimensions, nodeCount);
 
     return 0;
 
