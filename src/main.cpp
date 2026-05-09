@@ -11,14 +11,14 @@
 int main() {
 
     const std::string vocabularyFilePath = "../resources/vocabulary.txt";
-    const std::string datasetFilePath = "../resources/training/wikitext-103/wiki.test.tokens";
+    const std::string datasetFilePath = "../resources/training/wikitext-103/wiki.train.tokens";
     const std::string embeddingsFilePath = "../resources/embeddings.bin";
 
     // The maximum amount of tokens the code will load at once
     const int batchSize = 1000;
     const int embeddingDimensions = 100;
-    const float learningRate = 0.001f;
-    const int contextWindowSize = 5;
+    const float learningRate = 0.01f;
+    const int contextWindowSize = 7;
 
     vocabularyClass vocabulary;
     vocabulary.load(vocabularyFilePath);
@@ -32,7 +32,7 @@ int main() {
     dataset.buildFrequencyMap(trie, vocabulary.tokens.size());
     
     embeddingsClass embeddings(embeddingDimensions);
-    embeddings.generateRandom(vocabulary.tokens.size(), nodeCount);
+    //embeddings.generateRandom(vocabulary.tokens.size(), nodeCount);
     
     softmaxClass hSoftmax;
     hSoftmax.buildTree(dataset.tokenFrequencies, nodeCount);
@@ -40,12 +40,34 @@ int main() {
 
     
     fileClass file;
-    //file.save(embeddings, embeddingsFilePath);
-    //file.load(embeddingsFilePath, vocabulary.tokens.size(), embeddings, embeddingDimensions, nodeCount);
+    file.load(embeddingsFilePath, vocabulary.tokens.size(), embeddings, embeddingDimensions, nodeCount);
+
+
+    // int token = 1024;
+    // std::pair<int, float> bestMatch = {-1, 0.0f};
+
+    // for (int i = 0; i < vocabulary.tokens.size(); i++) {
+
+    //     if (i == token) {
+    //         continue;
+    //     }
+
+    //     float dotProduct = std::inner_product(embeddings.inputLayer[i].begin(), embeddings.inputLayer[i].end(), embeddings.inputLayer[token].begin(), 0.0f);
+
+    //     if (dotProduct > bestMatch.second) {
+    //         bestMatch = {i, dotProduct};
+    //     }
+    // }
+
+    // std::cout << vocabulary.tokens[bestMatch.first] << "\n";
+
+    // return 0;
 
     
     // Train until end of corpus file
-    while(dataset.loadBatch(trie)) {
+    for (int n = 0; n < 1000; n++) {
+
+        dataset.loadBatch(trie);
 
         std::vector<std::pair<std::vector<float>, int>> inputGradient(vocabulary.tokens.size(), {std::vector<float>(embeddingDimensions, 0.0f), 0});
 
@@ -91,7 +113,10 @@ int main() {
 
             for (int j = 0; j < embeddingDimensions; j++) {
 
-                embeddings.inputLayer[i][j] -= inputGradient[i].first[j] * learningRate / inputGradient[i].second;
+                if (inputGradient[i].second > 0) {
+
+                    embeddings.inputLayer[i][j] -= inputGradient[i].first[j] * learningRate / inputGradient[i].second;
+                }
             }
         }
 
@@ -99,7 +124,10 @@ int main() {
 
             for (int j = 0; j < embeddingDimensions; j++) {
 
-                embeddings.outputLayer[i][j] -= outputGradient[i].first[j] * learningRate / inputGradient[i].second;
+                if (outputGradient[i].second > 0) {
+
+                    embeddings.outputLayer[i][j] -= outputGradient[i].first[j] * learningRate / outputGradient[i].second;
+                }
             }
         }
 
@@ -109,7 +137,7 @@ int main() {
     }
 
     // Save the embeddings to the binary file
-    // file.save(embeddings, embeddingsFilePath);
+    file.save(embeddings, embeddingsFilePath);
 
     return 0;
 }

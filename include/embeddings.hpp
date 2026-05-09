@@ -93,7 +93,7 @@ class embeddingsClass {
 
         for (int i = 0; i < contextPath->directions.size(); i++) {
 
-            float condition = contextPath->directions[i] == softmaxClass::right ? 1 : -1;
+            float condition = contextPath->directions[i] == softmaxClass::right ? 1 : 0;
 
             float dotProduct = std::inner_product(outputLayer[contextPath->path[i]->embeddingIndex].begin(),
                 outputLayer[contextPath->path[i]->embeddingIndex].end(),
