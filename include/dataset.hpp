@@ -19,7 +19,7 @@ class datasetClass {
         this->batchSize = batchSize;
         
         // Open the dataset file
-        file.open(filePath);
+        file.open(filePath, std::ios::in);
         
         // Verify that the file is open
         if (!file.is_open()) {
@@ -38,8 +38,6 @@ class datasetClass {
 
             tokenFrequencies[i] = 0;
         }
-
-
 
 
         std::string line = "";
@@ -103,6 +101,9 @@ class datasetClass {
                 }
             }
         }
+
+        file.clear();
+        file.seekg(0);
     }
 
 

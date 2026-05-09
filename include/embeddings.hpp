@@ -5,6 +5,7 @@
 #include <cmath>
 #include <random>
 #include <iostream>
+#include "softmax.hpp"
 
 class embeddingsClass {
     public:
@@ -18,6 +19,11 @@ class embeddingsClass {
     embeddingsClass(const int &dimensions) {
 
         this->dimensions = dimensions;
+    }
+
+    static inline float sigmoid(const float &x) {
+
+        return 1/(1 + std::exp(-x));
     }
 
     // Randomly initialize the weights with Glorot initialization 
@@ -73,30 +79,35 @@ class embeddingsClass {
         return std::exp(tcDotProduct) / sum;
     }
 
-    // Returns the loss
-    inline float loss(const float &softmax) {
+    float loss(const int &targetIndex, const int &contextIndex, softmaxClass &hSoftmax) {
 
-        float loss = - std::log(softmax);
+        float loss = - std::log(hSoftmax.softmax(targetIndex, contextIndex, *this));
 
-        // Check for floating point rounding error caused by std::log(0)
         return std::isnan(loss) || std::isinf(loss) ? 0 : loss;
     }
 
-    // Returns the gradient
-    std::vector<float> backwardPass(const float &softmax, const std::vector<float>* embedding) {
+    // Computes the input and output gradients
+    void backwardPass(const int &targetIndex, const int &contextIndex, softmaxClass &hSoftmax, std::vector<float> &inputGradient, std::vector<std::pair<std::vector<float>, int>> &outputGradient) {
 
-        // This variable holds de derivative of the loss function regarding the dot product of the embeddings
-        float dLdzi = softmax - 1.0f;
+        softmaxClass::pathStruct* contextPath = &hSoftmax.paths[contextIndex];
 
-        // The gradient is a weighted embedding
-        std::vector<float> gradient = *embedding;
-        
-        // Multiply each element of the vector with the computed derivative
-        for (int i = 0; i < dimensions; i++) {
+        for (int i = 0; i < contextPath->directions.size(); i++) {
 
-            gradient[i] *= dLdzi;
+            float condition = contextPath->directions[i] == softmaxClass::right ? 1 : -1;
+
+            float dotProduct = std::inner_product(outputLayer[contextPath->path[i]->embeddingIndex].begin(),
+                outputLayer[contextPath->path[i]->embeddingIndex].end(),
+                inputLayer[targetIndex].begin(), 0.0f);
+
+            float lossTerm = - (condition - sigmoid(dotProduct));
+
+            for (int j = 0; j < dimensions; j++) {
+
+                outputGradient[contextPath->path[i]->embeddingIndex].first[j] += inputLayer[targetIndex][j] * lossTerm;
+                inputGradient[j] += outputLayer[contextPath->path[i]->embeddingIndex][j] * lossTerm;
+            }
+
+            outputGradient[contextPath->path[i]->embeddingIndex].second++;
         }
-
-        return gradient;
     }
 };

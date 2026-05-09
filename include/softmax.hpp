@@ -5,6 +5,8 @@
 #include <vector>
 #include <algorithm>
 
+class embeddingsClass;
+
 class softmaxClass {
     public:
 
@@ -39,13 +41,6 @@ class softmaxClass {
 
         return a->frequency > b->frequency;
     }
-
-
-    static inline float sigmoid(const float &x) {
-
-        return 1/(1 + std::exp(-x));
-    }
-
     
     std::unique_ptr<nodeStruct> root;
         
@@ -101,8 +96,8 @@ class softmaxClass {
         root = std::move(leaves[0]);
     }
 
+    // Associates a pathStruct to each token index
     std::unordered_map<int, pathStruct> paths;
-
 
     // Searches recursively the node it's given, stops if it encounters a leaf
     void search(std::unique_ptr<nodeStruct> &currentNode, pathStruct currentPath) {
@@ -115,16 +110,16 @@ class softmaxClass {
 
             return;
         }
+
+        currentPath.path.push_back(currentNode.get());
         
         // Update the current path to add the right child node
-        currentPath.path.push_back(currentNode->rightChild.get());
         currentPath.directions.push_back(right);
 
         // Continue the search on the right child node
         search(currentNode->rightChild, currentPath);
 
         // Updaye the current path to add the left child node
-        currentPath.path.back() = currentNode->leftChild.get();
         currentPath.directions.back() = left;
 
         // Continue the search on the left child node
@@ -134,10 +129,10 @@ class softmaxClass {
     void buildPaths() {
 
         pathStruct path;
-        path.path.push_back(root.get());
         search(root, path);
     }
 
+    float softmax(const int &targetIndex, const int &contextIndex, embeddingsClass &embeddings);
 
     softmaxClass() {
 
