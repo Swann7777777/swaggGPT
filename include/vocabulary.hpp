@@ -32,7 +32,7 @@ class vocabularyClass {
         // Check if the vocabulary contains the alphabet in the first 26 tokens
         std::string alphabet = "abcdefghijklmnopqrstuvwxyz";
 
-        for (int i = 0; i < alphabet.size(); i++) {
+        for (int i = 0; i < static_cast<int>(alphabet.size()); i++) {
             if (tokens[i] != std::string(1, alphabet[i])) {
                 std::cerr << "The entire alphabet must be present at the beginning of the vocabulary\n";
                 exit(1);

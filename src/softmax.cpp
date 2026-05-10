@@ -5,7 +5,7 @@ float softmaxClass::softmax(const int &targetIndex, const int &contextIndex, emb
 
     float product = 1;
 
-    for (int i = 0; i < paths[contextIndex].directions.size(); i++) {
+    for (int i = 0; i < static_cast<int>(paths[contextIndex].directions.size()); i++) {
 
         float dotProduct = std::inner_product(embeddings.inputLayer[targetIndex].begin(),
             embeddings.inputLayer[targetIndex].end(),

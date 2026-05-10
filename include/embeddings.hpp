@@ -91,7 +91,7 @@ class embeddingsClass {
 
         softmaxClass::pathStruct* contextPath = &hSoftmax.paths[contextIndex];
 
-        for (int i = 0; i < contextPath->directions.size(); i++) {
+        for (int i = 0; i < static_cast<int>(contextPath->directions.size()); i++) {
 
             float condition = contextPath->directions[i] == softmaxClass::right ? 1 : 0;
 

@@ -113,6 +113,8 @@ class datasetClass {
     // Loads a batch of the dataset and tokenizes it
     bool loadBatch(trieClass &trie) {
 
+        tokens.clear();
+
         std::string line = "";
 
         
@@ -151,7 +153,7 @@ class datasetClass {
                             tokens.insert(tokens.end(), tokenizedWord.begin(), tokenizedWord.end());
 
                             // Stop parsing once the expected size is reached
-                            if (tokens.size() >= batchSize) {
+                            if (static_cast<int>(tokens.size()) >= batchSize) {
                                 return true;
                             }
 
