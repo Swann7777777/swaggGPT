@@ -27,7 +27,7 @@ int main() {
     // The maximum amount of tokens the code will load at once
     const int batchSize = 10000;
     const int embeddingDimensions = 100;
-    const float learningRate = 0.002f;
+    const float learningRate = 0.001f;
     const int contextWindowSize = 11;
 
     vocabularyClass vocabulary;

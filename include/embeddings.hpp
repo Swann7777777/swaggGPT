@@ -91,6 +91,8 @@ class embeddingsClass {
     // Computes the input and output gradients
     void backwardPass(const int &targetIndex, const int &contextIndex, softmaxClass &hSoftmax) {
 
+        std::vector<float> inputGradient(dimensions, 0.0f);
+
         softmaxClass::pathStruct* contextPath = &hSoftmax.paths[contextIndex];
 
         for (int i = 0; i < static_cast<int>(contextPath->directions.size()); i++) {
@@ -106,8 +108,13 @@ class embeddingsClass {
             for (int j = 0; j < dimensions; j++) {
 
                 outputLayer[contextPath->path[i]->embeddingIndex][j] -= inputLayer[targetIndex][j] * lossTerm * learningRate;
-                inputLayer[targetIndex][j] -= outputLayer[contextPath->path[i]->embeddingIndex][j] * lossTerm * learningRate;
+                inputGradient[j] += outputLayer[contextPath->path[i]->embeddingIndex][j] * lossTerm;
             }
+        }
+
+        for (int i = 0; i < dimensions; i++) {
+
+            inputLayer[targetIndex][i] -= inputGradient[i] * learningRate;
         }
     }
 };
