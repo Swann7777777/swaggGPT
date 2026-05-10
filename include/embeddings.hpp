@@ -10,15 +10,17 @@
 class embeddingsClass {
     public:
 
-    int dimensions;
+    int dimensions = 0;
+    float learningRate = 0.0f;
 
     // For now, these are vectors of vectors but I might change them to flat vectors for better speeds
     std::vector<std::vector<float>> inputLayer;
     std::vector<std::vector<float>> outputLayer;
 
-    embeddingsClass(const int &dimensions) {
+    embeddingsClass(const int &dimensions, const float &learningRate) {
 
         this->dimensions = dimensions;
+        this->learningRate = learningRate;
     }
 
     static inline float sigmoid(const float &x) {
@@ -87,7 +89,7 @@ class embeddingsClass {
     }
 
     // Computes the input and output gradients
-    void backwardPass(const int &targetIndex, const int &contextIndex, softmaxClass &hSoftmax, std::vector<float> &inputGradient, std::vector<std::pair<std::vector<float>, int>> &outputGradient) {
+    void backwardPass(const int &targetIndex, const int &contextIndex, softmaxClass &hSoftmax) {
 
         softmaxClass::pathStruct* contextPath = &hSoftmax.paths[contextIndex];
 
@@ -103,11 +105,9 @@ class embeddingsClass {
 
             for (int j = 0; j < dimensions; j++) {
 
-                outputGradient[contextPath->path[i]->embeddingIndex].first[j] += inputLayer[targetIndex][j] * lossTerm;
-                inputGradient[j] += outputLayer[contextPath->path[i]->embeddingIndex][j] * lossTerm;
+                outputLayer[contextPath->path[i]->embeddingIndex][j] -= inputLayer[targetIndex][j] * lossTerm * learningRate;
+                inputLayer[targetIndex][j] -= outputLayer[contextPath->path[i]->embeddingIndex][j] * lossTerm * learningRate;
             }
-
-            outputGradient[contextPath->path[i]->embeddingIndex].second++;
         }
     }
 };

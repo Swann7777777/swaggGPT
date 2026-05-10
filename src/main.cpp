@@ -27,7 +27,7 @@ int main() {
     // The maximum amount of tokens the code will load at once
     const int batchSize = 10000;
     const int embeddingDimensions = 100;
-    const float learningRate = 0.0005f;
+    const float learningRate = 0.002f;
     const int contextWindowSize = 11;
 
     vocabularyClass vocabulary;
@@ -41,7 +41,7 @@ int main() {
     datasetClass dataset(datasetFilePath, batchSize);
     dataset.buildFrequencyMap(trie, vocabulary.tokens.size());
     
-    embeddingsClass embeddings(embeddingDimensions);
+    embeddingsClass embeddings(embeddingDimensions, learningRate);
     embeddings.generateRandom(vocabulary.tokens.size(), nodeCount);
     
     softmaxClass hSoftmax;
@@ -75,21 +75,8 @@ int main() {
 
     signal(SIGINT, signalHandler);
 
-    std::vector<std::pair<std::vector<float>, int>> inputGradient(vocabulary.tokens.size(), {std::vector<float>(embeddingDimensions, 0.0f), 0});
-    std::vector<std::pair<std::vector<float>, int>> outputGradient(embeddings.outputLayer.size(), {std::vector<float>(embeddingDimensions, 0.0f), 0});
-
     // Train until end of corpus file
     while (dataset.loadBatch(trie) && train) {
-
-        for (auto &i : inputGradient) {
-            std::fill(i.first.begin(), i.first.end(), 0.0f);
-            i.second = 0;
-        }        
-        
-        for (auto &i : outputGradient) {
-            std::fill(i.first.begin(), i.first.end(), 0.0f);
-            i.second = 0;
-        }
 
         // Holds the sum of the loss over the batch to average later
         float lossAccumulator = 0.0f;
@@ -116,9 +103,7 @@ int main() {
 
                 int contextIndex = dataset.tokens[j];
 
-                embeddings.backwardPass(targetIndex, contextIndex, hSoftmax, inputGradient[targetIndex].first, outputGradient);
-
-                inputGradient[targetIndex].second++;
+                embeddings.backwardPass(targetIndex, contextIndex, hSoftmax);
 
                 lossAccumulator += embeddings.loss(targetIndex, contextIndex, hSoftmax);
 
@@ -126,32 +111,6 @@ int main() {
             }
 
         }
-
-        for (int i = 0; i < static_cast<int>(vocabulary.tokens.size()); i++) {
-
-            for (int j = 0; j < embeddingDimensions; j++) {
-
-                if (inputGradient[i].second > 0) {
-
-                    embeddings.inputLayer[i][j] -= inputGradient[i].first[j] * learningRate;
-                    // embeddings.inputLayer[i][j] -= inputGradient[i].first[j] * learningRate / inputGradient[i].second;
-                }
-            }
-        }
-
-        for (int i = 0; i < static_cast<int>(embeddings.outputLayer.size()); i++) {
-
-            for (int j = 0; j < embeddingDimensions; j++) {
-
-                if (outputGradient[i].second > 0) {
-
-                    embeddings.outputLayer[i][j] -= outputGradient[i].first[j] * learningRate;
-                    // embeddings.outputLayer[i][j] -= outputGradient[i].first[j] * learningRate / outputGradient[i].second;
-                }
-            }
-        }
-
-
 
         std::cout << lossAccumulator / static_cast<float>(iterations) << "\n";
     }
