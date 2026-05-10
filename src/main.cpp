@@ -2,6 +2,7 @@
 #include <string>
 #include <csignal>
 #include <atomic>
+#include <cmath>
 #include "trie.hpp"
 #include "vocabulary.hpp"
 #include "dataset.hpp"
@@ -27,7 +28,7 @@ int main() {
     // The maximum amount of tokens the code will load at once
     const int batchSize = 10000;
     const int embeddingDimensions = 100;
-    const float learningRate = 0.001f;
+    const float learningRate = 0.025f;
     const int contextWindowSize = 11;
 
     vocabularyClass vocabulary;
@@ -39,38 +40,67 @@ int main() {
     trie.generate(vocabulary.tokens);
     
     datasetClass dataset(datasetFilePath, batchSize);
-    dataset.buildFrequencyMap(trie, vocabulary.tokens.size());
+    // dataset.buildFrequencyMap(trie, vocabulary.tokens.size());
     
     embeddingsClass embeddings(embeddingDimensions, learningRate);
-    embeddings.generateRandom(vocabulary.tokens.size(), nodeCount);
+    // embeddings.generateRandom(vocabulary.tokens.size(), nodeCount);
     
     softmaxClass hSoftmax;
-    hSoftmax.buildTree(dataset.tokenFrequencies, nodeCount);
-    hSoftmax.buildPaths();
+    // hSoftmax.buildTree(dataset.tokenFrequencies, nodeCount);
+    // hSoftmax.buildPaths();
     
     fileClass file;
-    // file.load(embeddingsFilePath, vocabulary.tokens.size(), embeddings, embeddingDimensions, nodeCount);
+    file.load(embeddingsFilePath, vocabulary.tokens.size(), embeddings, embeddingDimensions, nodeCount);
 
 
-    // int token = 1742;
-    // std::pair<int, float> bestMatch = {-1, 0.0f};
+    int token = 388;
+    int a = 132;
+    int b = 2111;
+    std::pair<int, float> bestMatch = {-1, -1.0f};
 
-    // for (int i = 0; i < static_cast<int>(vocabulary.tokens.size()); i++) {
+    std::vector<float> embedding = embeddings.inputLayer[token];
 
-    //     if (i == token) {
-    //         continue;
-    //     }
+    for (int i = 0; i < embeddingDimensions; i++) {
 
-    //     float dotProduct = std::inner_product(embeddings.inputLayer[i].begin(), embeddings.inputLayer[i].end(), embeddings.inputLayer[token].begin(), 0.0f);
+        embedding[i] = embedding[i] - embeddings.inputLayer[a][i] + embeddings.inputLayer[b][i];
+    }
 
-    //     if (dotProduct > bestMatch.second) {
-    //         bestMatch = {i, dotProduct};
-    //     }
-    // }
+    float magnitudeA = 0.0f;
 
-    // std::cout << vocabulary.tokens[bestMatch.first] << "\n";
+    for (int i = 0; i < embeddingDimensions; i++) {
 
-    // return 0;
+        magnitudeA += std::pow(embedding[i], 2);
+    }
+
+    magnitudeA = std::sqrt(magnitudeA);
+
+    for (int i = 0; i < static_cast<int>(vocabulary.tokens.size()); i++) {
+
+        if (i == token || i == a || i == b) {
+            continue;
+        }
+
+        float dotProduct = std::inner_product(embedding.begin(), embedding.end(), embeddings.inputLayer[i].begin(), 0.0f);
+
+        float magnitudeB = 0.0f;
+
+        for (int j = 0; j < embeddingDimensions; j++) {
+
+            magnitudeB += std::pow(embeddings.inputLayer[i][j], 2);
+        }
+
+        magnitudeB = std::sqrt(magnitudeB);
+
+        float cosineSimilarity = dotProduct / (magnitudeA * magnitudeB);
+
+        if (cosineSimilarity > bestMatch.second) {
+            bestMatch = {i, cosineSimilarity};
+        }
+    }
+
+    std::cout << vocabulary.tokens[bestMatch.first] << "\n";
+
+    return 0;
     
 
     signal(SIGINT, signalHandler);
