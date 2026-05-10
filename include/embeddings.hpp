@@ -107,8 +107,8 @@ class embeddingsClass {
 
             for (int j = 0; j < dimensions; j++) {
 
-                outputLayer[contextPath->path[i]->embeddingIndex][j] -= inputLayer[targetIndex][j] * lossTerm * learningRate;
                 inputGradient[j] += outputLayer[contextPath->path[i]->embeddingIndex][j] * lossTerm;
+                outputLayer[contextPath->path[i]->embeddingIndex][j] -= inputLayer[targetIndex][j] * lossTerm * learningRate;
             }
         }
 
