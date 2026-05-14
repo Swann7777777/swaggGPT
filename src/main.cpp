@@ -28,8 +28,8 @@ int main() {
     // The maximum amount of tokens the code will load at once
     const int batchSize = 10000;
     const int embeddingDimensions = 100;
-    const float learningRate = 0.025f;
-    const int contextWindowSize = 11;
+    const float learningRate = 0.0025f;
+    const int contextWindowSize = 5;
 
     vocabularyClass vocabulary;
     vocabulary.load(vocabularyFilePath);
@@ -40,69 +40,73 @@ int main() {
     trie.generate(vocabulary.tokens);
     
     datasetClass dataset(datasetFilePath, batchSize);
-    // dataset.buildFrequencyMap(trie, vocabulary.tokens.size());
+    dataset.buildFrequencyMap(trie, vocabulary.tokens.size());
     
     embeddingsClass embeddings(embeddingDimensions, learningRate);
-    // embeddings.generateRandom(vocabulary.tokens.size(), nodeCount);
+    embeddings.generateRandom(vocabulary.tokens.size(), nodeCount);
     
     softmaxClass hSoftmax;
-    // hSoftmax.buildTree(dataset.tokenFrequencies, nodeCount);
-    // hSoftmax.buildPaths();
+    hSoftmax.buildTree(dataset.tokenFrequencies, nodeCount);
+    hSoftmax.buildPaths();
     
     fileClass file;
-    file.load(embeddingsFilePath, vocabulary.tokens.size(), embeddings, embeddingDimensions, nodeCount);
+    // file.load(embeddingsFilePath, vocabulary.tokens.size(), embeddings, embeddingDimensions, nodeCount);
 
 
-    int token = 388;
-    int a = 132;
-    int b = 2111;
-    std::pair<int, float> bestMatch = {-1, -1.0f};
+    // int token = 388;
+    // int a = 132;
+    // int b = 2111;
+    // std::pair<int, float> bestMatch = {-1, -1.0f};
 
-    std::vector<float> embedding = embeddings.inputLayer[token];
+    // std::vector<float> embedding = embeddings.inputLayer[token];
 
-    for (int i = 0; i < embeddingDimensions; i++) {
+    // for (int i = 0; i < embeddingDimensions; i++) {
 
-        embedding[i] = embedding[i] - embeddings.inputLayer[a][i] + embeddings.inputLayer[b][i];
-    }
+    //     embedding[i] = embedding[i] - embeddings.inputLayer[a][i] + embeddings.inputLayer[b][i];
+    // }
 
-    float magnitudeA = 0.0f;
+    // float magnitudeA = 0.0f;
 
-    for (int i = 0; i < embeddingDimensions; i++) {
+    // for (int i = 0; i < embeddingDimensions; i++) {
 
-        magnitudeA += std::pow(embedding[i], 2);
-    }
+    //     magnitudeA += std::pow(embedding[i], 2);
+    // }
 
-    magnitudeA = std::sqrt(magnitudeA);
+    // magnitudeA = std::sqrt(magnitudeA);
 
-    for (int i = 0; i < static_cast<int>(vocabulary.tokens.size()); i++) {
+    // for (int i = 0; i < static_cast<int>(vocabulary.tokens.size()); i++) {
 
-        if (i == token || i == a || i == b) {
-            continue;
-        }
+    //     if (i == token || i == a || i == b) {
+    //         continue;
+    //     }
 
-        float dotProduct = std::inner_product(embedding.begin(), embedding.end(), embeddings.inputLayer[i].begin(), 0.0f);
+    //     float dotProduct = std::inner_product(embedding.begin(), embedding.end(), embeddings.inputLayer[i].begin(), 0.0f);
 
-        float magnitudeB = 0.0f;
+    //     float magnitudeB = 0.0f;
 
-        for (int j = 0; j < embeddingDimensions; j++) {
+    //     for (int j = 0; j < embeddingDimensions; j++) {
 
-            magnitudeB += std::pow(embeddings.inputLayer[i][j], 2);
-        }
+    //         magnitudeB += std::pow(embeddings.inputLayer[i][j], 2);
+    //     }
 
-        magnitudeB = std::sqrt(magnitudeB);
+    //     magnitudeB = std::sqrt(magnitudeB);
 
-        float cosineSimilarity = dotProduct / (magnitudeA * magnitudeB);
+    //     float cosineSimilarity = dotProduct / (magnitudeA * magnitudeB);
 
-        if (cosineSimilarity > bestMatch.second) {
-            bestMatch = {i, cosineSimilarity};
-        }
-    }
+    //     if (cosineSimilarity > bestMatch.second) {
+    //         bestMatch = {i, cosineSimilarity};
+    //     }
+    // }
 
-    std::cout << vocabulary.tokens[bestMatch.first] << "\n";
+    // std::cout << vocabulary.tokens[bestMatch.first] << "\n";
 
-    return 0;
+    // return 0;
     
 
+    // Keeps track of the number of batches processed
+    int batchIterations = 0;
+
+    // Initialize a listener for SIGINT events ( when the user presses CTRL + C in the running console )
     signal(SIGINT, signalHandler);
 
     // Train until end of corpus file
@@ -117,6 +121,7 @@ int main() {
         // Iterate over the batch tokens
         for (int i = 0; i < static_cast<int>(dataset.tokens.size()); i++) {
             
+            // Store the index of the target token for easier access and to prevent confusion
             int targetIndex = dataset.tokens[i];
 
             // Calculate the context window limits
@@ -126,23 +131,28 @@ int main() {
             // Iterate through the context window
             for (int j = jInit; j < jMax; j++) {
 
-                // Skips computing the gradient of the target word with itself
+                // Skips computing the gradient of the target token with itself
                 if (j == i) {
                     continue;
                 }                
 
+                // Store the index of the context token for easier access and to prevent confusion
                 int contextIndex = dataset.tokens[j];
 
+                // Run the backpropagation algorithm to update the embeddings of the model
                 embeddings.backwardPass(targetIndex, contextIndex, hSoftmax);
 
-                lossAccumulator += embeddings.loss(targetIndex, contextIndex, hSoftmax);
+                // Add the current loss to the loss accumulator
+                lossAccumulator += embeddings.loss(targetIndex, contextIndex, hSoftmax); // SOFTMAX RESULT IS COMPUTED TWICE BECAUSE IT WAS ALREADY COMPUTED IN backwardPass()
 
+                // Increment the iterations to divide the loss accumulator
                 iterations++;
             }
 
         }
 
-        std::cout << lossAccumulator / static_cast<float>(iterations) << "\n";
+        std::cout << "(" << batchIterations << "," << lossAccumulator / static_cast<float>(iterations) << "),";
+        batchIterations++;
     }
 
     std::cout << "Saving embeddings...\n";

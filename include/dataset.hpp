@@ -11,7 +11,8 @@
 class datasetClass {
     public:
     
-    
+    int batchSize = 0;
+    std::vector<int> tokens;
     std::ifstream file;
     
     datasetClass(const std::string &filePath, const int &batchSize) {
@@ -34,12 +35,13 @@ class datasetClass {
     // Builds the tokenFrequencies map
     void buildFrequencyMap(trieClass &trie, const int &vocabularySize) {
 
+        // Initialize the frequency map so every token is present
         for (int i = 0; i < vocabularySize; i++) {
 
             tokenFrequencies[i] = 0;
         }
 
-
+        
         std::string line = "";
 
         
@@ -106,13 +108,10 @@ class datasetClass {
         file.seekg(0);
     }
 
-
-    int batchSize = 0;
-    std::vector<int> tokens;
-
     // Loads a batch of the dataset and tokenizes it
     bool loadBatch(trieClass &trie) {
 
+        // Clear the tokens from the previous batch before loading a new batch
         tokens.clear();
 
         std::string line = "";
