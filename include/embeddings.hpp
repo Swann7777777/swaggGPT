@@ -63,32 +63,13 @@ class embeddingsClass {
         }
     }
 
-    // Returns de probability of two tokens appearing in the context window
-    float softmax(const std::vector<float>* targetEmbedding, const std::vector<float>* contextEmbedding) {
-
-        // Holds the softmax fraction denominator
-        float sum = 0.0f;
-
-        // Compute the sum of the dot products of the target word and all the words in the vocabulary (not efficient -> should implement hierarchical softmax)
-        for (const auto &w : outputLayer) {
-
-            float dotProduct = std::inner_product(targetEmbedding->begin(), targetEmbedding->end(), w.begin(), 0.0f);
-            sum += std::exp(dotProduct);
-        }
-
-        // Numerator of the fraction
-        float tcDotProduct = std::inner_product(targetEmbedding->begin(), targetEmbedding->end(), contextEmbedding->begin(), 0.0f);
-
-        return std::exp(tcDotProduct) / sum;
-    }
-
     // Returns the loss of the target token with the context token
     float loss(const int &targetIndex, const int &contextIndex, softmaxClass &hSoftmax) {
 
         // Computes the loss with negative log likelyhood
         float loss = - std::log(hSoftmax.softmax(targetIndex, contextIndex, *this));
 
-        // REMOVED THE SAFEGUARD THAT PREVENTS THE LOSS FROM BEING NaN OR INF FOR TESTING, CONSIDER REMOVING IT LATER
+        // REMOVED THE SAFEGUARD THAT PREVENTS THE LOSS FROM BEING NaN OR INF FOR TESTING, CONSIDER REMOVING IT LATER MAYBE
         return loss;
         // return std::isnan(loss) || std::isinf(loss) ? 0 : loss;
     }

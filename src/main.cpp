@@ -14,7 +14,7 @@
 std::atomic<bool> train(true);
 
 void signalHandler(int sig) {
-
+    sig = sig;
     train = false;
 }
 
@@ -40,67 +40,61 @@ int main() {
     trie.generate(vocabulary.tokens);
     
     datasetClass dataset(datasetFilePath, batchSize);
-    dataset.buildFrequencyMap(trie, vocabulary.tokens.size());
+    // dataset.buildFrequencyMap(trie, vocabulary.tokens.size());
     
     embeddingsClass embeddings(embeddingDimensions, learningRate);
-    embeddings.generateRandom(vocabulary.tokens.size(), nodeCount);
+    // embeddings.generateRandom(vocabulary.tokens.size(), nodeCount);
     
     softmaxClass hSoftmax;
-    hSoftmax.buildTree(dataset.tokenFrequencies, nodeCount);
-    hSoftmax.buildPaths();
+    // hSoftmax.buildTree(dataset.tokenFrequencies, nodeCount);
+    // hSoftmax.buildPaths();
     
     fileClass file;
-    // file.load(embeddingsFilePath, vocabulary.tokens.size(), embeddings, embeddingDimensions, nodeCount);
+    file.load(embeddingsFilePath, vocabulary.tokens.size(), embeddings, embeddingDimensions, nodeCount);
 
 
-    // int token = 388;
-    // int a = 132;
-    // int b = 2111;
-    // std::pair<int, float> bestMatch = {-1, -1.0f};
 
-    // std::vector<float> embedding = embeddings.inputLayer[token];
+    int token = 3475;
 
-    // for (int i = 0; i < embeddingDimensions; i++) {
+    std::vector<std::pair<int, float>> cosineSimilarities;
 
-    //     embedding[i] = embedding[i] - embeddings.inputLayer[a][i] + embeddings.inputLayer[b][i];
-    // }
+    float targetMagnitude = 0.0f;
 
-    // float magnitudeA = 0.0f;
+    for (const auto &j : embeddings.inputLayer[token]) {
+        targetMagnitude += pow(j, 2);
+    }
 
-    // for (int i = 0; i < embeddingDimensions; i++) {
+    targetMagnitude = sqrt(targetMagnitude);
 
-    //     magnitudeA += std::pow(embedding[i], 2);
-    // }
+    for (int i = 0; i < static_cast<int>(vocabulary.tokens.size()); i++) {
 
-    // magnitudeA = std::sqrt(magnitudeA);
+        if (i == token) {
+            continue;
+        }
 
-    // for (int i = 0; i < static_cast<int>(vocabulary.tokens.size()); i++) {
+        float dotProduct = std::inner_product(embeddings.inputLayer[token].begin(), embeddings.inputLayer[token].end(), embeddings.inputLayer[i].begin(), 0.0f);
 
-    //     if (i == token || i == a || i == b) {
-    //         continue;
-    //     }
+        float contextMagnitude = 0.0f;
 
-    //     float dotProduct = std::inner_product(embedding.begin(), embedding.end(), embeddings.inputLayer[i].begin(), 0.0f);
+        for (const auto &j : embeddings.inputLayer[i]) {
+            contextMagnitude += pow(j, 2);
+        }
 
-    //     float magnitudeB = 0.0f;
+        contextMagnitude = sqrt(contextMagnitude);
 
-    //     for (int j = 0; j < embeddingDimensions; j++) {
+        float similarity = dotProduct / (targetMagnitude * contextMagnitude);
 
-    //         magnitudeB += std::pow(embeddings.inputLayer[i][j], 2);
-    //     }
+        cosineSimilarities.push_back({i, similarity});
+    }
 
-    //     magnitudeB = std::sqrt(magnitudeB);
+    std::sort(cosineSimilarities.begin(), cosineSimilarities.end(), [](std::pair<int, float> a, std::pair<int, float> b) {return a.second > b.second;});
 
-    //     float cosineSimilarity = dotProduct / (magnitudeA * magnitudeB);
+    for (int i = 0; i < 5; i++) {
+        std::cout << vocabulary.tokens[cosineSimilarities[i].first] << "\n";
+    }
 
-    //     if (cosineSimilarity > bestMatch.second) {
-    //         bestMatch = {i, cosineSimilarity};
-    //     }
-    // }
+    return 0;
 
-    // std::cout << vocabulary.tokens[bestMatch.first] << "\n";
-
-    // return 0;
     
 
     // Keeps track of the number of batches processed
