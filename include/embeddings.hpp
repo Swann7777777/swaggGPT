@@ -87,7 +87,7 @@ class embeddingsClass {
         for (int i = 0; i < static_cast<int>(contextPath->directions.size()); i++) {
 
             // Holds either a 1 if the current direction is the arbitrarily chosen direction (here right) else 0
-            float condition = contextPath->directions[i] == softmaxClass::right ? 1 : 0;
+            float condition = contextPath->directions[i] == softmaxClass::right ? 1.0f : 0.0f;
 
             // Compute the dot product of the target embedding with the current node's embedding
             float dotProduct = std::inner_product(outputLayer[contextPath->path[i]->embeddingIndex].begin(),

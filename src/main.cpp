@@ -14,7 +14,7 @@
 std::atomic<bool> train(true);
 
 void signalHandler(int sig) {
-    sig = sig;
+    sig;
     train = false;
 }
 
@@ -40,60 +40,60 @@ int main() {
     trie.generate(vocabulary.tokens);
     
     datasetClass dataset(datasetFilePath, batchSize);
-    // dataset.buildFrequencyMap(trie, vocabulary.tokens.size());
+    dataset.buildFrequencyMap(trie, vocabulary.tokens.size());
     
     embeddingsClass embeddings(embeddingDimensions, learningRate);
     // embeddings.generateRandom(vocabulary.tokens.size(), nodeCount);
     
     softmaxClass hSoftmax;
-    // hSoftmax.buildTree(dataset.tokenFrequencies, nodeCount);
-    // hSoftmax.buildPaths();
+    hSoftmax.buildTree(dataset.tokenFrequencies, nodeCount);
+    hSoftmax.buildPaths();
     
     fileClass file;
     file.load(embeddingsFilePath, vocabulary.tokens.size(), embeddings, embeddingDimensions, nodeCount);
 
 
 
-    int token = 3475;
+    // int token = 5529;
 
-    std::vector<std::pair<int, float>> cosineSimilarities;
+    // std::vector<std::pair<int, float>> cosineSimilarities;
 
-    float targetMagnitude = 0.0f;
+    // float targetMagnitude = 0.0f;
 
-    for (const auto &j : embeddings.inputLayer[token]) {
-        targetMagnitude += pow(j, 2);
-    }
+    // for (const auto &j : embeddings.inputLayer[token]) {
+    //     targetMagnitude += pow(j, 2);
+    // }
 
-    targetMagnitude = sqrt(targetMagnitude);
+    // targetMagnitude = sqrt(targetMagnitude);
 
-    for (int i = 0; i < static_cast<int>(vocabulary.tokens.size()); i++) {
+    // for (int i = 0; i < static_cast<int>(vocabulary.tokens.size()); i++) {
 
-        if (i == token) {
-            continue;
-        }
+    //     if (i == token) {
+    //         continue;
+    //     }
 
-        float dotProduct = std::inner_product(embeddings.inputLayer[token].begin(), embeddings.inputLayer[token].end(), embeddings.inputLayer[i].begin(), 0.0f);
+    //     float dotProduct = std::inner_product(embeddings.inputLayer[token].begin(), embeddings.inputLayer[token].end(), embeddings.inputLayer[i].begin(), 0.0f);
 
-        float contextMagnitude = 0.0f;
+    //     float contextMagnitude = 0.0f;
 
-        for (const auto &j : embeddings.inputLayer[i]) {
-            contextMagnitude += pow(j, 2);
-        }
+    //     for (const auto &j : embeddings.inputLayer[i]) {
+    //         contextMagnitude += pow(j, 2);
+    //     }
 
-        contextMagnitude = sqrt(contextMagnitude);
+    //     contextMagnitude = sqrt(contextMagnitude);
 
-        float similarity = dotProduct / (targetMagnitude * contextMagnitude);
+    //     float similarity = dotProduct / (targetMagnitude * contextMagnitude);
 
-        cosineSimilarities.push_back({i, similarity});
-    }
+    //     cosineSimilarities.push_back({i, similarity});
+    // }
 
-    std::sort(cosineSimilarities.begin(), cosineSimilarities.end(), [](std::pair<int, float> a, std::pair<int, float> b) {return a.second > b.second;});
+    // std::sort(cosineSimilarities.begin(), cosineSimilarities.end(), [](std::pair<int, float> a, std::pair<int, float> b) {return a.second > b.second;});
 
-    for (int i = 0; i < 5; i++) {
-        std::cout << vocabulary.tokens[cosineSimilarities[i].first] << "\n";
-    }
+    // for (int i = 0; i < 5; i++) {
+    //     std::cout << vocabulary.tokens[cosineSimilarities[i].first] << "\n";
+    // }
 
-    return 0;
+    // return 0;
 
     
 

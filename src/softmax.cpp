@@ -15,7 +15,7 @@ float softmaxClass::softmax(const int &targetIndex, const int &contextIndex, emb
             embeddings.outputLayer[paths[contextIndex].path[i]->embeddingIndex].begin(), 0.0f);
 
         // Is 1 if the current direction is an arbitrary chosen direction (right here) else -1
-        float condition = paths[contextIndex].directions[i] == right ? 1 : -1;
+        float condition = paths[contextIndex].directions[i] == right ? 1.0f : -1.0f;
 
         // Compute the sigmoid of the dot product multiplied by the condition variable
         float sigmoid = embeddings.sigmoid(condition * dotProduct);
