@@ -14,7 +14,7 @@
 std::atomic<bool> train(true);
 
 void signalHandler(int sig) {
-    sig;
+
     train = false;
 }
 
